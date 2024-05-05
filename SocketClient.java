@@ -6,6 +6,10 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 @SuppressWarnings("serial")
 public class SocketClient extends JFrame implements ActionListener, Runnable {
@@ -17,6 +21,7 @@ public class SocketClient extends JFrame implements ActionListener, Runnable {
     Socket sk;
     BufferedReader br;
     PrintWriter pw;
+    private final Logger logger = Logger.getLogger(SocketClient.class.getName());
 
     public SocketClient() {
         super("Chit Chat");
@@ -57,6 +62,14 @@ public class SocketClient extends JFrame implements ActionListener, Runnable {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         input_Text.addActionListener(this); //Event registration
+
+        try {
+            FileHandler fileHandler = new FileHandler("client.log");
+            fileHandler.setFormatter(new SimpleFormatter());
+            logger.addHandler(fileHandler);
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Failed to initialize logging", e);
+        }
     }
 
     public void serverConnection() {
@@ -77,9 +90,10 @@ public class SocketClient extends JFrame implements ActionListener, Runnable {
             pw.println(name); // Send to server side
 
             new Thread(this).start();
+            logger.info("Attempting to connect to the server...");
 
         } catch (Exception e) {
-            System.out.println(e + " Socket Connection error");
+            logger.log(Level.SEVERE, "Socket Connection error", e);
         }
     }
 
@@ -91,19 +105,25 @@ public class SocketClient extends JFrame implements ActionListener, Runnable {
     public void run() {
         String data = null;
         try {
+            logger.info("Client thread started");
             while ((data = br.readLine()) != null) {
                 textArea.append(data + "\n"); //textArea Decrease the position of the box's scroll bar by the length of the text entered
                 textArea.setCaretPosition(textArea.getText().length());
             }
         } catch (Exception e) {
-            System.out.println(e + "--> Client run fail");
+            logger.log(Level.SEVERE, "Client run fail", e);
         }
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        String data = input_Text.getText();
-        pw.println(data); // Send to server side
-        input_Text.setText("");
+        try {
+            logger.info("Sending message to server...");
+            String data = input_Text.getText();
+            pw.println(data); // Send to server side
+            input_Text.setText("");
+        }catch (Exception ex){
+            logger.log(Level.SEVERE, "Error sending message to server", ex);
+        }
     }
 }

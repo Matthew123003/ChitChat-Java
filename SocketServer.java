@@ -6,25 +6,35 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 public class SocketServer {
     ServerSocket server;
     Socket sk;
     InetAddress addr;
-    
+
+    private final Logger logger = Logger.getLogger("Socket Server Logger");
+
+
     ArrayList<ServerThread> list = new ArrayList<ServerThread>();
 
     public SocketServer() {
         try {
+            FileHandler fileHandler = new FileHandler("server.log");
+            fileHandler.setFormatter(new SimpleFormatter());
+            logger.addHandler(fileHandler);
         	addr = InetAddress.getByName("127.0.0.1");
         	//addr = InetAddress.getByName("192.168.43.1");
             
         	server = new ServerSocket(1234,50,addr);
-            System.out.println("\n Waiting for Client connection");
+            logger.info("\n Waiting for Client connection");
             SocketClient.main(null);
             while(true) {
                 sk = server.accept();
-                System.out.println(sk.getInetAddress() + " connect");
+                logger.info(sk.getInetAddress() + " connect");
 
                 //Thread connected clients to ArrayList
                 ServerThread st = new ServerThread(this);
@@ -32,7 +42,7 @@ public class SocketServer {
                 st.start();
             }
         } catch(IOException e) {
-            System.out.println(e + "-> ServerSocket failed");
+            logger.log(Level.WARNING, "Server Socket Failed", e);
         }
     }
 
@@ -59,9 +69,11 @@ class ServerThread extends Thread {
     SocketServer server;
     PrintWriter pw;
     String name;
+    private final Logger logger;
 
-    public ServerThread(SocketServer server) {
+    public ServerThread(SocketServer server, Logger logger) {
         this.server = server;
+        this.logger = logger;
     }
 
     @Override
@@ -83,11 +95,12 @@ class ServerThread extends Thread {
                 server.broadCast("["+name+"] "+ data);
             }
         } catch (Exception e) {
+            logger.log(Level.SEVERE, "Exception occurred in ServerThread", e);
             //Remove the current thread from the ArrayList.
             server.removeThread(this);
             server.broadCast("**["+name+"] Left**");
-            System.out.println(server.sk.getInetAddress()+" - ["+name+"] Exit");
-            System.out.println(e + "---->");
+            logger.info(server.sk.getInetAddress()+" - ["+name+"] Exit");
+            logger.info(e + "---->");
         }
     }
 }
