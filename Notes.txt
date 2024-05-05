@@ -55,3 +55,4 @@ server, which will broadcast them to all connected clients, including the sender
  them in their chat window.
 
 So, yes, the clients will be able to talk to each other through the server.
+
