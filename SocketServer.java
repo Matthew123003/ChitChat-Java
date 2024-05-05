@@ -1,7 +1,4 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -35,7 +32,7 @@ public class SocketServer {
     public List<String> getConnectedUsers() {
         return connectedUsers;
     }
-    
+
 
 
     public SocketServer() {
@@ -107,8 +104,11 @@ class ServerThread extends Thread {
             while((data = br.readLine()) != null ){
                 if(data.equals("/list")){
                     pw.println("a");
+                }else if (data.equals("/image")) {
+                    receiveImage(br); // Call method to handle receiving image
+                }else {
+                    server.broadCast("[" + name + "] " + data);
                 }
-                server.broadCast("["+name+"] "+ data);
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Exception occurred in ServerThread", e);
@@ -117,6 +117,18 @@ class ServerThread extends Thread {
             server.broadCast("**["+name+"] Left**");
             logger.info(server.sk.getInetAddress()+" - ["+name+"] Exit");
             logger.info(e + "---->");
+        }
+    }
+
+    private void receiveImage(BufferedReader br) {
+        try {
+            ObjectInputStream ois = new ObjectInputStream(server.sk.getInputStream());
+            byte[] imageData = (byte[]) ois.readObject();
+            // Handle the received image data, e.g., save it to a file or process it
+            // For simplicity, let's just log a message here
+            logger.info("Received image from client " + name);
+        } catch (IOException | ClassNotFoundException e) {
+            logger.log(Level.SEVERE, "Error receiving image", e);
         }
     }
 }

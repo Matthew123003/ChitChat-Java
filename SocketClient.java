@@ -2,9 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
@@ -17,6 +15,7 @@ public class SocketClient extends JFrame implements ActionListener, Runnable {
     JScrollPane jp = new JScrollPane(textArea);
     JTextField input_Text = new JTextField();
     JMenuBar menuBar = new JMenuBar();
+    JButton sendImageBtn = new JButton("Send Image");
 
     Socket sk;
     BufferedReader br;
@@ -62,6 +61,21 @@ public class SocketClient extends JFrame implements ActionListener, Runnable {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         input_Text.addActionListener(this); //Event registration
+
+        sendImageBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser fileChooser = new JFileChooser();
+                int result = fileChooser.showOpenDialog(SocketClient.this);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    File selectedFile = fileChooser.getSelectedFile();
+                    sendImage(selectedFile);
+                }
+            }
+        });
+
+        // Add the send image button to the frame
+        getContentPane().add(sendImageBtn, "North");
 
         try {
             FileHandler fileHandler = new FileHandler("client.log");
@@ -136,6 +150,31 @@ public class SocketClient extends JFrame implements ActionListener, Runnable {
             input_Text.setText("");
         }catch (Exception ex){
             logger.log(Level.SEVERE, "Error sending message to server", ex);
+        }
+    }
+
+    private void sendImage(File file) {
+        try {
+            // Read the image file into a byte array
+            FileInputStream fis = new FileInputStream(file);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                bos.write(buffer, 0, bytesRead);
+            }
+            fis.close();
+            byte[] imageData = bos.toByteArray();
+
+            // Send the byte array containing the image data to the server
+            pw.println("/image");
+            ObjectOutputStream oos = new ObjectOutputStream(sk.getOutputStream());
+            oos.writeObject(imageData);
+            oos.flush();
+            JOptionPane.showMessageDialog(this, "Image sent successfully", "Success", JOptionPane.INFORMATION_MESSAGE);
+            logger.info("Image sent successfully");
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, "Error sending image", ex);
         }
     }
 }
