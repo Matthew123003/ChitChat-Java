@@ -6,6 +6,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,9 +18,24 @@ public class SocketServer {
     InetAddress addr;
 
     private final Logger logger = Logger.getLogger("Socket Server Logger");
-
-
     ArrayList<ServerThread> list = new ArrayList<ServerThread>();
+    private ArrayList<String> connectedUsers = new ArrayList<>();
+
+    // Add user to the list of connected users
+    private void addUser(String username) {
+        connectedUsers.add(username);
+    }
+
+    // Remove user from the list of connected users
+    private void removeUser(String username) {
+        connectedUsers.remove(username);
+    }
+
+    // Get the list of connected users
+    public List<String> getConnectedUsers() {
+        return connectedUsers;
+    }
+
 
     public SocketServer() {
         try {
@@ -69,11 +85,10 @@ class ServerThread extends Thread {
     SocketServer server;
     PrintWriter pw;
     String name;
-    private final Logger logger;
+    private final Logger logger = Logger.getLogger("Server Thread Logger");
 
-    public ServerThread(SocketServer server, Logger logger) {
+    public ServerThread(SocketServer server) {
         this.server = server;
-        this.logger = logger;
     }
 
     @Override
@@ -89,7 +104,7 @@ class ServerThread extends Thread {
 
             String data;
             while((data = br.readLine()) != null ){
-                if(data == "/list"){
+                if(data.equals("/list")){
                     pw.println("a");
                 }
                 server.broadCast("["+name+"] "+ data);

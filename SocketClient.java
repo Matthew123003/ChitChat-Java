@@ -107,6 +107,11 @@ public class SocketClient extends JFrame implements ActionListener, Runnable {
         try {
             logger.info("Client thread started");
             while ((data = br.readLine()) != null) {
+                if (data.startsWith("/userlist:")) {
+                    // Extract the user list from the message and display it in the chat window
+                    String userList = data.substring("/userlist:".length());
+                    textArea.append("Connected Users: " + userList + "\n");
+                }
                 textArea.append(data + "\n"); //textArea Decrease the position of the box's scroll bar by the length of the text entered
                 textArea.setCaretPosition(textArea.getText().length());
             }
@@ -120,7 +125,14 @@ public class SocketClient extends JFrame implements ActionListener, Runnable {
         try {
             logger.info("Sending message to server...");
             String data = input_Text.getText();
-            pw.println(data); // Send to server side
+            // Check if the user typed the "/users" command
+            if ("/users".equalsIgnoreCase(data.trim())) {
+                // Send a request to the server to get the list of connected users
+                pw.println("/users");
+            } else {
+                // Send the message to the server
+                pw.println(data);
+            }
             input_Text.setText("");
         }catch (Exception ex){
             logger.log(Level.SEVERE, "Error sending message to server", ex);
