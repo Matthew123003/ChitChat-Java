@@ -33,7 +33,9 @@ public class SocketServer {
         return connectedUsers;
     }
 
-
+    private static final String STOCK_API_URL = "https://api.example.com/stock/news";
+    private static final String SPORTS_API_URL = "https://api.example.com/sports/headlines";
+    private static final String WEATHER_API_URL = "https://api.example.com/weather";
 
     public SocketServer() {
         try {
@@ -73,6 +75,29 @@ public class SocketServer {
             st.pw.println(message);
         }
     }
+
+    // Fetch stock market news from the API
+    private String fetchStockMarketNews() {
+        // Logic to fetch data from STOCK_API_URL
+        // Use HttpURLConnection or a library like OkHttp to make HTTP requests
+        // Return the fetched data as a string
+        return null;
+    }
+
+    // Fetch sports headlines from the API
+    private String fetchSportsHeadlines() {
+        // Logic to fetch data from SPORTS_API_URL
+        // Return the fetched data as a string
+        return null;
+    }
+
+    // Fetch weather information from the API
+    private String fetchWeatherInfo() {
+        // Logic to fetch data from WEATHER_API_URL
+        // Return the fetched data as a string
+        return null;
+    }
+
 
     public static void main(String[] args) {
         new SocketServer();
